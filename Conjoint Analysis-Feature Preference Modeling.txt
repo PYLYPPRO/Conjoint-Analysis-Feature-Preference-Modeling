@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>6. Conjoint Analysis (Feature Preference) Simulation</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 40px; background-color: #f0f8ff; }
+        .container { max-width: 700px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        h1 { color: #004d99; text-align: center; border-bottom: 3px solid #004d99; padding-bottom: 10px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #333; }
+        select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        button { background-color: #004d99; color: white; padding: 15px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; margin-top: 30px; font-size: 18px; font-weight: bold; }
+        button:hover { background-color: #003366; }
+        #result_conjoint { margin-top: 30px; padding: 25px; border-radius: 8px; font-size: 1.1em; text-align: left; line-height: 1.6; border: 1px dashed #004d99; }
+        .explanation { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; font-size: 0.9em; color: #777; text-align: justify; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>6. Conjoint Analysis Simulation: Program Preference</h1>
+    
+    <p class="explanation">
+        <strong>Method Explanation:</strong> Conjoint Analysis decomposes consumer preferences into the utility scores of individual product attributes. By having users rate different product profiles (Program A, B, C), we determine which features (e.g., cost, format) are most valuable. The **Part-Worth Utility** scores generated show the incremental desirability of each level. 
+    </p>
+
+    <label for="cost">1. Cost Level (Per Year):</label>
+    <select id="cost">
+        <option value="10">High ($30,000+)</option>
+        <option value="20">Medium ($15,000 - $30,000)</option>
+        <option value="30">Low (Under $15,000)</option>
+    </select>
+    
+    <label for="format">2. Delivery Format:</label>
+    <select id="format">
+        <option value="15">Fully On-Campus</option>
+        <option value="25">Hybrid (50% Online)</option>
+        <option value="35">Fully Online</option>
+    </select>
+
+    <label for="career_services">3. Career Services:</label>
+    <select id="career_services">
+        <option value="5">Standard Resources</option>
+        <option value="15">Dedicated Internship Placement (High Utility)</option>
+    </select>
+
+    <label for="course_scheduling">4. Course Scheduling:</label>
+    <select id="course_scheduling">
+        <option value="10">Fixed Daytime Schedule</option>
+        <option value="20">Flexible Evenings/Weekends</option>
+    </select>
+
+    <label for="satisfaction_rating">5. Hypothetical Student Satisfaction Rating (1-10):</label>
+    <input type="number" id="satisfaction_rating" value="7" min="1" max="10" step="1">
+
+    <button onclick="runConjointAnalysis()">Run Conjoint Analysis</button>
+
+    <div id="result_conjoint">
+        Select program attributes and a satisfaction rating to see the combined utility score.
+    </div>
+</div>
+
+<script>
+// --- Conjoint Analysis Simulation in JavaScript ---
+
+// This simulates the derived Part-Worth Utilities (PWU) for each attribute level, 
+// based on previous market research data. Higher PWU means higher preference.
+const partWorthUtilities = {
+    cost: {
+        '10': -5,  // High Cost: Negative Utility
+        '20': 5,   // Medium Cost: Positive Utility
+        '30': 15   // Low Cost: High Positive Utility
+    },
+    format: {
+        '15': 2,   // On-Campus: Low positive utility
+        '25': 8,   // Hybrid: Medium utility
+        '35': 12   // Fully Online: High utility (for target segment)
+    },
+    career_services: {
+        '5': 0,   // Standard: Baseline utility
+        '15': 10  // Dedicated Internship: High utility
+    },
+    course_scheduling: {
+        '10': 3,   // Fixed: Low utility
+        '20': 7    // Flexible: Higher utility
+    }
+};
+
+function runConjointAnalysis() {
+    // 1. Collect user choices (representing a potential program profile)
+    const costLevel = document.getElementById('cost').value;
+    const formatLevel = document.getElementById('format').value;
+    const careerServicesLevel = document.getElementById('career_services').value;
+    const schedulingLevel = document.getElementById('course_scheduling').value;
+    const satisfaction = parseInt(document.getElementById('satisfaction_rating').value);
+
+    // 2. Calculate the Total Program Utility Score
+    const utilityCost = partWorthUtilities.cost[costLevel];
+    const utilityFormat = partWorthUtilities.format[formatLevel];
+    const utilityCareer = partWorthUtilities.career_services[careerServicesLevel];
+    const utilityScheduling = partWorthUtilities.course_scheduling[schedulingLevel];
+
+    const totalUtilityScore = utilityCost + utilityFormat + utilityCareer + utilityScheduling;
+
+    // 3. Estimate Market Share (Simulated) based on utility and competition (using a Logit model concept)
+    // We assume a baseline competitor has a utility of 20.
+    const competitionUtility = 20;
+    const numerator = Math.exp(totalUtilityScore * 0.1);
+    const denominator = numerator + Math.exp(competitionUtility * 0.1);
+    const simulatedMarketShare = (numerator / denominator) * 100;
+
+    // 4. Calculate Customer Lifetime Value (CLV) correlation (Simulated)
+    // CLV is often correlated with satisfaction and low cost sensitivity
+    const clvIndex = totalUtilityScore * 0.8 + satisfaction * 2;
+    
+    // 5. Output and Detailed Interpretation
+    const resultDiv = document.getElementById('result_conjoint');
+
+    let message = `<h2>CONJOINT ANALYSIS REPORT</h2>`;
+    message += `<h3>1. PROGRAM PROFILE UTILITY CALCULATION</h3>`;
+    message += `<p><strong>Total Program Utility Score: ${totalUtilityScore}</strong> (Baseline Competitor Utility: ${competitionUtility})</p>`;
+    message += `<ul>
+        <li>Cost Utility: ${utilityCost}</li>
+        <li>Format Utility: ${utilityFormat}</li>
+        <li>Career Services Utility: ${utilityCareer}</li>
+        <li>Scheduling Utility: ${utilityScheduling}</li>
+    </ul>`;
+
+    message += `<h3>2. MARKETING INSIGHTS</h3>`;
+    message += `<p><strong>Simulated Market Share (vs. Competitor):</strong> ${simulatedMarketShare.toFixed(2)}%</p>`;
+    message += `<p><strong>Estimated CLV Index (Higher is Better):</strong> ${clvIndex.toFixed(1)}</p>`;
+
+    if (totalUtilityScore > 35) {
+        message += `<p><strong>CONCLUSION: High Program Attractiveness.</strong> This combination of features (especially the **Low Cost** and **Fully Online** format) demonstrates maximum appeal for the target segment. The program is optimized for both market share and CLV.</p>`;
+    } else if (totalUtilityScore < 10) {
+        message += `<p><strong>CONCLUSION: Low Program Attractiveness.</strong> The combination (likely high cost and fixed schedule) results in low utility. **Recommendation:** Rework the pricing structure and consider offering more flexible delivery formats to increase competitive advantage.</p>`;
+    } else {
+        message += `<p><strong>CONCLUSION: Medium Attractiveness.</strong> The program is viable but lacks a strong differentiator. **Recommendation:** Focus marketing efforts on the high-utility features selected (e.g., Dedicated Internship Placement) to maximize enrollment.</p>`;
+    }
+    
+    resultDiv.innerHTML = message;
+}
+</script>
+
+</body>
+</html>
